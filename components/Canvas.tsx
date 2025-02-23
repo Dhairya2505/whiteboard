@@ -23,6 +23,12 @@ export default function Canvas() {
     const canvasContext = useRef<CanvasRenderingContext2D | null>(null)
     const [isDrawing, setIsDrawing] = useState(false);
     const [pencilStroke, setPencilStroke] = useState<{ x: number; y: number }[]>([])
+    
+    const [startX, setStartX] = useState<number | null>(null);
+    const [startY, setStartY] = useState<number | null>(null);
+
+    const [height, setHeight] = useState<number | null>(null)
+    const [width, setWidth] = useState<number | null>(null)
 
     const { shapes, setShapes, shape } = shape_store();
 
@@ -65,7 +71,9 @@ export default function Canvas() {
                 }
                 ctx.stroke();
             } else {
+                ctx.fillStyle = "transparent"
                 ctx.fillRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height);
+                ctx.strokeRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height)
             }
         });
 
@@ -92,32 +100,47 @@ export default function Canvas() {
 
     const handleMouseDown = (e: MouseEvent<HTMLCanvasElement>) => {   
         if (!canvasContext.current) return;
-
         const ctx = canvasContext.current
         ctx.strokeStyle = "white";
         ctx.lineWidth = 1;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         const { x, y } = getMousePos(e);
+        setStartX(x);
+        setStartY(y);
         ctx.beginPath()
         ctx.moveTo(x, y)
-
+        
         setIsDrawing(true);
-
+        
     }
 
     const handleMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
-
-        if (!canvasContext.current || !isDrawing) return;
-
+        
+        if(!canvas.current) return;
+        
+        const ctx = canvasContext.current
+        
+        if (!ctx || !isDrawing) return;
+        
         const { x, y } = getMousePos(e);
-
+        
         switch (shape) {
             case "pencil":
-                const ctx = canvasContext.current
                 ctx.lineTo(x, y)
                 ctx.stroke();
                 setPencilStroke((prev) => [...prev, {x, y}])
+                break;
+                
+            case "rectangle":
+                if(!(startX && startY)) return;    
+                ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
+                drawShapes(shapes)
+                ctx.fillStyle = "transparent"
+                ctx.fillRect(startX,startY,x-startX, y-startY)       
+                ctx.strokeRect(startX,startY,x-startX, y-startY)
+                setWidth(x-startX)
+                setHeight(y-startY)       
                 break;
 
             default:
@@ -131,9 +154,10 @@ export default function Canvas() {
         if(!canvasContext.current) return;
         canvasContext.current.beginPath()
 
+        const id = nanoid()
         switch (shape) {
             case "pencil":
-                const id = nanoid()
+                if(!pencilStroke.length) return;
                 setShapes({
                     id,
                     type: "pencil",
@@ -141,8 +165,16 @@ export default function Canvas() {
                 })
                 setPencilStroke([])
                 break;
-        
+            
             default:
+                if(!(startX && startY)) return;
+                if(!(height && width)) return;
+                setShapes({
+                    id,
+                    type: "shape",
+                    cords: {x: startX, y: startY},
+                    size: { height, width }
+                })
                 break;
         }
 
@@ -150,7 +182,7 @@ export default function Canvas() {
 
   return (
     <div className="flex-1 bg-black p-4 flex flex-col h-screen overflow-hidden">
-      <canvas ref={canvas} className="border border-gray-800 rounded-xl flex-1 flex items-center justify-center overflow-hidden cursor-pointer" onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
+      <canvas ref={canvas} className="border border-gray-800 rounded-xl flex-1 flex items-center justify-center overflow-hidden cursor-pointer" onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
       </canvas>
     </div>
   )

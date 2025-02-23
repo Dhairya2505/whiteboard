@@ -1,5 +1,9 @@
+"use client";
+
+import { shape_store } from "@/zustand_store/shapes_store"
+
 import {
-    Pen,
+    Pencil,
     Eraser,
     Square,
     Circle,
@@ -13,13 +17,13 @@ import {
 } from "lucide-react"
 
 const tools = [
-    { icon: Pen, name: "Pen" },
-    { icon: Highlighter, name: "Highlighter" },
-    { icon: PenTool, name: "Brush" },
-    { icon: Eraser, name: "Eraser" },
-    { icon: Square, name: "Rectangle" },
-    { icon: Circle, name: "Ellipse" },
-    { icon: Type, name: "Text" }
+    { icon: Pencil, name: "pencil" },
+    { icon: Highlighter, name: "highlighter" },
+    { icon: PenTool, name: "brush" },
+    { icon: Eraser, name: "eraser" },
+    { icon: Square, name: "rectangle" },
+    { icon: Circle, name: "ellipse" },
+    { icon: Type, name: "text" }
 ]
 
 const actions = [
@@ -30,6 +34,9 @@ const actions = [
 ]
 
 export default function Sidebar() {
+
+    const { shape, setShape } = shape_store();
+
     return (
         <div className="bg-black w-14 flex flex-col h-screen border-r border-gray-800 overflow-y-auto">
             <div className="flex-1 py-2 space-y-2">
@@ -37,7 +44,8 @@ export default function Sidebar() {
                     {tools.map((Tool, index) => (
                         <div
                             key={index}
-                            className="w-10 h-10 mx-auto flex flex-col items-center justify-center rounded-xl cursor-pointer hover:bg-gray-800 hover:rounded-xl transition-colors group"
+                            className={`${shape == Tool.name ? `bg-gray-800` : `bg-transparent`} w-10 h-10 mx-auto flex flex-col items-center justify-center rounded-xl cursor-pointer hover:bg-gray-800 active:bg-gray-900 hover:rounded-xl transition-colors group`}
+                            onClick={() => setShape(Tool.name)}
                             title={Tool.name}
                         >
                             <Tool.icon size={18} className="text-gray-400 group-hover:text-white" />

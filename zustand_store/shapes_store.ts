@@ -16,7 +16,7 @@ interface Pencil {
 interface shape_store {
     shapes: (Shape | Pencil)[],
     shape: string
-    setShapes: (newShapeObject: Shape | Pencil) => void
+    setShapes: (newShapes: (Shape | Pencil)[]) => void
     setShape: (newShape: string) => void
 }
 
@@ -25,9 +25,9 @@ export const shape_store = create<shape_store>()((set) => {
     return{
         shapes: [],
         shape: "pencil",
-        setShapes: (newShapeObject: Shape | Pencil) => set((state) => {
+        setShapes: (newShapes: (Shape | Pencil)[]) => set((state) => {
             return {
-                shapes: [...state.shapes, newShapeObject]
+                shapes: newShapes
             }
         }),
         setShape: (newShape: string) => set((state) => {

@@ -3,6 +3,7 @@
 import { shape_store } from "@/zustand_store/shapes_store"
 
 import {
+    Hand,
     Pencil,
     Eraser,
     Square,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react"
 
 const tools = [
+    {icon: Hand, name: "hand"},
     { icon: Pencil, name: "pencil" },
     { icon: Highlighter, name: "highlighter" },
     { icon: PenTool, name: "brush" },

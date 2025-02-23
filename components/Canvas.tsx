@@ -116,7 +116,6 @@ export default function Canvas() {
     }
 
     const handleMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
-        
         if(!canvas.current) return;
         
         const ctx = canvasContext.current
@@ -133,15 +132,29 @@ export default function Canvas() {
                 break;
                 
             case "rectangle":
-                if(!(startX && startY)) return;    
-                ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
-                drawShapes(shapes)
-                ctx.fillStyle = "transparent"
-                ctx.fillRect(startX,startY,x-startX, y-startY)       
-                ctx.strokeRect(startX,startY,x-startX, y-startY)
-                setWidth(x-startX)
-                setHeight(y-startY)       
-                break;
+                if(!(startX && startY)) return;
+                switch (e.shiftKey) {
+                    case true:
+                        ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
+                        drawShapes(shapes)
+                        ctx.fillStyle = "transparent"
+                        ctx.fillRect(startX,startY,x-startX, x-startX)       
+                        ctx.strokeRect(startX,startY,x-startX, x-startX)
+                        setWidth(x-startX)
+                        setHeight(x-startX)
+                        break;
+                
+                    default:
+                        ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
+                        drawShapes(shapes)
+                        ctx.fillStyle = "transparent"
+                        ctx.fillRect(startX,startY,x-startX, y-startY)       
+                        ctx.strokeRect(startX,startY,x-startX, y-startY)
+                        setWidth(x-startX)
+                        setHeight(y-startY)       
+                        break;
+                }  
+                break;  
 
             default:
                 break;

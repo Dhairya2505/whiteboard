@@ -60,12 +60,14 @@ export default function Canvas() {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         shapes.forEach((shape) => {
+            ctx.lineJoin = "round";
+            ctx.lineCap = "round";
             if(shape.type == "pencil"){
                 if (shape.cords.length < 2) return;
+
                 ctx.strokeStyle = "white";
                 ctx.lineWidth = 1;
-                ctx.lineJoin = "round";
-                ctx.lineCap = "round";
+                
     
                 ctx.beginPath();
                 ctx.moveTo(shape.cords[0].x, shape.cords[0].y);
@@ -75,15 +77,17 @@ export default function Canvas() {
                 }
                 ctx.stroke();
             } else if(shape.type == "shape"){
+
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 1;
                 ctx.fillStyle = "transparent"
+
                 ctx.fillRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height);
                 ctx.strokeRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height)
             } else {
                 if (shape.cords.length < 2) return;
                 ctx.strokeStyle = "black";
                 ctx.lineWidth = 40;
-                ctx.lineJoin = "round";
-                ctx.lineCap = "round";
     
                 ctx.beginPath();
                 ctx.moveTo(shape.cords[0].x, shape.cords[0].y);
@@ -177,10 +181,8 @@ export default function Canvas() {
     }
 
     const handleMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
-        if(!canvas.current) return;
-        
-        const ctx = canvasContext.current
-        
+        if(!(canvasContext.current && canvas.current)) return;
+        const ctx = canvasContext.current;
         if (!ctx || !isDrawing) return;
         
         const { x, y } = getMousePos(e);
@@ -206,6 +208,10 @@ export default function Canvas() {
                     case true:
                         ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
                         drawShapes(shapes)
+                        ctx.strokeStyle = "white";
+                        ctx.lineWidth = 1;
+                        ctx.lineCap = "round";
+                        ctx.lineJoin = "round";
                         ctx.fillStyle = "transparent"
                         ctx.fillRect(startX,startY,x-startX, x-startX)       
                         ctx.strokeRect(startX,startY,x-startX, x-startX)
@@ -216,6 +222,10 @@ export default function Canvas() {
                     default:
                         ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
                         drawShapes(shapes)
+                        ctx.strokeStyle = "white";
+                        ctx.lineWidth = 1;
+                        ctx.lineCap = "round";
+                        ctx.lineJoin = "round";
                         ctx.fillStyle = "transparent"
                         ctx.fillRect(startX,startY,x-startX, y-startY)       
                         ctx.strokeRect(startX,startY,x-startX, y-startY)

@@ -121,7 +121,7 @@ export default function Canvas() {
             default:
                 break;
         }
-    }, [shape])
+    }, [shape, setShape, setShapes, shapes])
 
 
     const getMousePos = (e: MouseEvent<HTMLCanvasElement>) => {
@@ -152,7 +152,7 @@ export default function Canvas() {
 
         switch (shape) {
             case "hand":
-                for (let _shape of shapes){
+                for (const _shape of shapes){
                     if(_shape.type == "shape"){
                         if(x >= _shape.cords.x && x <= (_shape.cords.x + _shape.size.width) && y >= _shape.cords.y && y <= _shape.cords.y + _shape.size.height){
                             setDraggingShape(() => _shape)
@@ -269,7 +269,7 @@ export default function Canvas() {
 
     }
     
-    const handleMouseUp = (e: MouseEvent<HTMLCanvasElement>) => {
+    const handleMouseUp = () => {
         setIsDrawing(false);
         if(!canvasContext.current) return;
         canvasContext.current.beginPath()

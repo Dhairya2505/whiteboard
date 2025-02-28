@@ -12,9 +12,7 @@ import {
     Undo,
     Redo,
     Save,
-    Trash2,
-    PenTool,
-    Highlighter,
+    Trash2
 } from "lucide-react"
 
 const tools = [

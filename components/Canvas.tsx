@@ -13,7 +13,7 @@ interface Shape {
 
 interface Pencil {
     id: string,
-    type: "pencil",
+    type: "pencil" | "eraser",
     cords: {x: number, y: number}[]    
 }
 
@@ -74,10 +74,24 @@ export default function Canvas() {
                     ctx.lineTo(shape.cords[i].x, shape.cords[i].y);
                 }
                 ctx.stroke();
-            } else {
+            } else if(shape.type == "shape"){
                 ctx.fillStyle = "transparent"
                 ctx.fillRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height);
                 ctx.strokeRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height)
+            } else {
+                if (shape.cords.length < 2) return;
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 40;
+                ctx.lineJoin = "round";
+                ctx.lineCap = "round";
+    
+                ctx.beginPath();
+                ctx.moveTo(shape.cords[0].x, shape.cords[0].y);
+    
+                for (let i = 1; i < shape.cords.length; i++) {
+                    ctx.lineTo(shape.cords[i].x, shape.cords[i].y);
+                }
+                ctx.stroke();
             }
         });
 
@@ -177,6 +191,14 @@ export default function Canvas() {
                 ctx.stroke();
                 setPencilStroke((prev) => [...prev, {x, y}])
                 break;
+
+            case "eraser":
+                ctx.lineWidth = 40;
+                ctx.strokeStyle = "black"
+                ctx.lineTo(x, y)
+                ctx.stroke();
+                setPencilStroke((prev) => [...prev, {x, y}])
+                break;
                 
             case "rectangle":
                 if(!(startX && startY)) return;
@@ -264,11 +286,11 @@ export default function Canvas() {
                 setPencilStroke([])
                 break;
 
-            case "highlighter":
+            case "eraser":
                 if(!pencilStroke.length) return;
                 setShapes([...shapes, {
                     id,
-                    type: "pencil",
+                    type: "eraser",
                     cords: pencilStroke
                 }])
                 setPencilStroke([])

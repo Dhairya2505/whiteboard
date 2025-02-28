@@ -9,7 +9,7 @@ interface Shape {
 
 interface Pencil {
     id: string,
-    type: "pencil",
+    type: "pencil" | "eraser",
     cords: {x: number, y: number}[]    
 }
 

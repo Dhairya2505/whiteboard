@@ -20,8 +20,6 @@ import {
 const tools = [
     {icon: Hand, name: "hand"},
     { icon: Pencil, name: "pencil" },
-    { icon: Highlighter, name: "highlighter" },
-    { icon: PenTool, name: "brush" },
     { icon: Eraser, name: "eraser" },
     { icon: Square, name: "rectangle" },
     { icon: Circle, name: "ellipse" },
@@ -29,10 +27,10 @@ const tools = [
 ]
 
 const actions = [
-    { icon: Undo, name: "Undo" },
-    { icon: Redo, name: "Redo" },
-    { icon: Save, name: "Save" },
-    { icon: Trash2, name: "Clear" }
+    { icon: Undo, name: "undo" },
+    { icon: Redo, name: "redo" },
+    { icon: Save, name: "save" },
+    { icon: Trash2, name: "clear" }
 ]
 
 export default function Sidebar() {
@@ -59,6 +57,7 @@ export default function Sidebar() {
                     {actions.map((Action, index) => (
                         <div
                             key={index}
+                            onClick={() => setShape(Action.name)}
                             className="w-10 h-10 mx-auto flex flex-col items-center justify-center rounded-xl cursor-pointer hover:bg-gray-800 hover:rounded-xl transition-colors group"
                             title={Action.name}
                         >

@@ -30,10 +30,11 @@ export default function Canvas() {
     const [height, setHeight] = useState<number | null>(null)
     const [width, setWidth] = useState<number | null>(null)
 
-    const [draggingShape, setDraggingShape] = useState<Shape | null>(null);
+    const [draggingShape, setDraggingShape] = useState<Shape | Pencil | null>(null);
     const [draggingOffset, setDraggingOffset] = useState({ x: 0, y: 0 });
+    const [pencilCords, setPencilCords] = useState<{x: number, y: number}[]>([])
 
-    const { shapes, setShapes, shape } = shape_store();
+    const { shapes, setShapes, shape, setShape } = shape_store();
 
     useEffect(() => {
         if (canvas.current) {
@@ -88,9 +89,26 @@ export default function Canvas() {
 
     }, [shapes])
 
-    // useEffect(() => {
-    //     console.log(draggingShape)
-    // }, [draggingShape])
+    useEffect(() => {
+        switch (shape) {
+            case "clear":
+                const newShapes: (Shape | Pencil)[] = []
+                setShapes(newShapes)
+                setShape("pencil")
+                break;
+            case "undo":
+                const updated_Shapes: (Shape | Pencil)[] = []
+                for (let i = 0; i < shapes.length-1; i++) {
+                    updated_Shapes.push(shapes[i])
+                }
+                setShapes(updated_Shapes)
+                setShape("pencil")
+                break;
+            default:
+                break;
+        }
+    }, [shape])
+
 
     const getMousePos = (e: MouseEvent<HTMLCanvasElement>) => {
         if (!canvas.current) return { x: 0, y: 0 };
@@ -127,11 +145,16 @@ export default function Canvas() {
                             setDraggingOffset({ x:x - _shape.cords.x, y: y- _shape.cords.y })
                             break;
                         }
+                    } else {
+                        if(x >= _shape.cords[0].x && x <= (_shape.cords[_shape.cords.length-1].x) && y >= _shape.cords[0].y && y <= (_shape.cords[_shape.cords.length-1].y)){
+                            setDraggingShape(() => _shape)
+                            setPencilCords(() => _shape.cords)
+                        }
                     }
                 }
                 break;
         
-            default:
+            default:  
                 break;
         }
         
@@ -182,18 +205,38 @@ export default function Canvas() {
 
             case "hand":
                 if(!draggingShape) return;
+                if(!(startX && startY)) return;
                 const updatedShapes = shapes.map((shape) => {
-                    if (shape.type === "shape" && shape.id === draggingShape.id) {
-                        return {
-                            ...shape,
-                            cords: {
-                                x: (x-draggingOffset.x),
-                                y: (y-draggingOffset.y)
+                    if(shape.id === draggingShape.id){
+                        if (shape.type === "shape") {
+                            return {
+                                ...shape,
+                                cords: {
+                                    x: (x-draggingOffset.x),
+                                    y: (y-draggingOffset.y)
+                                }
+                            };
+                            
+                        }
+                        else {
+                            const updated_cords = [];
+                            
+                            for (let i = 0; i < pencilCords.length; i++) {
+                                updated_cords.push({
+                                    x: x - (startX - pencilCords[i].x),
+                                    y: y - (startY - pencilCords[i].y)
+                                })
                             }
-                        };
-                        
+                            return {
+                                ...shape,
+                                cords: updated_cords
+                            };
+                            
+                        }
+                    } else {
+                        return shape;
                     }
-                    return shape;
+                    
                 });
                 setShapes(updatedShapes);
                 drawShapes(shapes)
@@ -212,6 +255,16 @@ export default function Canvas() {
         const id = nanoid()
         switch (shape) {
             case "pencil":
+                if(!pencilStroke.length) return;
+                setShapes([...shapes, {
+                    id,
+                    type: "pencil",
+                    cords: pencilStroke
+                }])
+                setPencilStroke([])
+                break;
+
+            case "highlighter":
                 if(!pencilStroke.length) return;
                 setShapes([...shapes, {
                     id,

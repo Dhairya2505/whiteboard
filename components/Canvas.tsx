@@ -177,7 +177,7 @@ export default function Canvas() {
                             setPencilCords(() => _shape.cords)
                         }
                     } else if(_shape.type == "ellipse"){
-                        if(x >= _shape.cords.x-(_shape.size.height/2) && x <= _shape.cords.x+(_shape.size.height/2) && y >= _shape.cords.y - (_shape.size.height/2) && y <= _shape.cords.y + (_shape.size.height/2)){
+                        if(x >= _shape.cords.x-(_shape.size.height) && x <= _shape.cords.x+(_shape.size.height) && y >= _shape.cords.y - (_shape.size.height) && y <= _shape.cords.y + (_shape.size.height)){
                             setDraggingShape(() => _shape)
                             setDraggingOffset({ x:x - _shape.cords.x, y: y- _shape.cords.y })
                         }

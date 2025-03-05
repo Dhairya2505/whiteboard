@@ -2,7 +2,7 @@ import { create} from "zustand";
 
 interface Shape {
     id: string,
-    type: "shape",
+    type: "shape" | "ellipse",
     cords: {x: number, y: number},
     size: {height: number, width: number}
 }

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, MouseEvent } from "react"
 
 interface Shape {
     id: string,
-    type: "shape",
+    type: "shape" | "ellipse",
     cords: {x: number, y: number},
     size: {height: number, width: number}
 }
@@ -77,14 +77,22 @@ export default function Canvas() {
                 }
                 ctx.stroke();
             } else if(shape.type == "shape"){
-
+                ctx.beginPath();
                 ctx.strokeStyle = "white";
                 ctx.lineWidth = 1;
                 ctx.fillStyle = "transparent"
 
                 ctx.fillRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height);
                 ctx.strokeRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height)
-            } else {
+            } else if(shape.type == "ellipse"){
+                ctx.beginPath();
+                // ctx.moveTo(shape.cords.x, shape.cords.y);
+                ctx.arc(shape.cords.x, shape.cords.y, shape.size.height, 0, Math.PI * 2);
+                ctx.fillStyle = "transparent";
+                ctx.fill();
+                ctx.strokeStyle = "white";
+                ctx.stroke();
+            } else if (shape.type == "eraser"){
                 if (shape.cords.length < 2) return;
                 ctx.strokeStyle = "black";
                 ctx.lineWidth = 40;
@@ -163,10 +171,15 @@ export default function Canvas() {
                             setDraggingOffset({ x:x - _shape.cords.x, y: y- _shape.cords.y })
                             break;
                         }
-                    } else {
+                    } else if(_shape.type == "pencil"){
                         if(x >= _shape.cords[0].x && x <= (_shape.cords[_shape.cords.length-1].x) && y >= _shape.cords[0].y && y <= (_shape.cords[_shape.cords.length-1].y)){
                             setDraggingShape(() => _shape)
                             setPencilCords(() => _shape.cords)
+                        }
+                    } else if(_shape.type == "ellipse"){
+                        if(x >= _shape.cords.x-(_shape.size.height/2) && x <= _shape.cords.x+(_shape.size.height/2) && y >= _shape.cords.y - (_shape.size.height/2) && y <= _shape.cords.y + (_shape.size.height/2)){
+                            setDraggingShape(() => _shape)
+                            setDraggingOffset({ x:x - _shape.cords.x, y: y- _shape.cords.y })
                         }
                     }
                 }
@@ -235,6 +248,21 @@ export default function Canvas() {
                 }  
                 break;  
 
+            case "ellipse":
+                if(!(startX && startY)) return;
+                ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
+                drawShapes(shapes)
+                ctx.beginPath()
+                // ctx.moveTo(x,y)
+                ctx.arc((x+startX)/2, (y+startY)/2, Math.max(Math.abs(x - startX), Math.abs(y - startY)) / 2, 0, Math.PI * 2);
+                ctx.fillStyle = "transparent";
+                ctx.strokeStyle = "white";
+                setWidth(Math.max(Math.abs(x - startX), Math.abs(y - startY)) / 2)
+                setHeight(Math.max(Math.abs(x - startX), Math.abs(y - startY)) / 2)
+                ctx.fill();
+                ctx.stroke();
+                break
+
             case "hand":
                 if(!draggingShape) return;
                 if(!(startX && startY)) return;
@@ -250,7 +278,7 @@ export default function Canvas() {
                             };
                             
                         }
-                        else {
+                        else if(shape.type == "pencil"){
                             const updated_cords = [];
                             
                             for (let i = 0; i < pencilCords.length; i++) {
@@ -264,6 +292,16 @@ export default function Canvas() {
                                 cords: updated_cords
                             };
                             
+                        } else if (shape.type == "ellipse"){
+                            return {
+                                ...shape,
+                                cords: {
+                                    x: (x-draggingOffset.x),
+                                    y: (y-draggingOffset.y)
+                                }
+                            };
+                        } else {
+                            return shape;
                         }
                     } else {
                         return shape;
@@ -279,11 +317,11 @@ export default function Canvas() {
 
     }
     
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent<HTMLCanvasElement>) => {
         setIsDrawing(false);
         if(!canvasContext.current) return;
         canvasContext.current.beginPath()
-
+        const { x, y } = getMousePos(e);
         const id = nanoid()
         switch (shape) {
             case "pencil":
@@ -309,6 +347,16 @@ export default function Canvas() {
             case "hand":
                 setDraggingShape(null)
                 break;
+            case "ellipse":
+                if(!(startX && startY)) return;
+                if(!(height && width)) return;
+                setShapes([...shapes, {
+                    id,
+                    type: "ellipse",
+                    cords: {x: (x+startX)/2, y: (y+startY)/2},
+                    size: { height, width }
+                }])
+                break
 
             default:
                 if(!(startX && startY)) return;

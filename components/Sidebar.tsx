@@ -8,7 +8,6 @@ import {
     Square,
     Circle,
     Undo,
-    Redo,
     Trash2,
     Slash
 } from "lucide-react"
@@ -23,7 +22,6 @@ const tools = [
 
 const actions = [
     { icon: Undo, name: "undo" },
-    { icon: Redo, name: "redo" },
     { icon: Trash2, name: "clear" }
 ]
 

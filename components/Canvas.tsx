@@ -34,7 +34,7 @@ export default function Canvas() {
     const [draggingOffset, setDraggingOffset] = useState({ x: 0, y: 0 });
     const [pencilCords, setPencilCords] = useState<{x: number, y: number}[]>([])
 
-    const { shapes, setShapes, shape, setShape, shapes_length, setShapesLength } = shape_store();
+    const { shapes, setShapes, shape, setShape } = shape_store();
 
     useEffect(() => {
         if (canvas.current) {
@@ -58,9 +58,7 @@ export default function Canvas() {
         if(!ctx) return;
         
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        let n = shapes_length;
         shapes.forEach((shape) => {
-            if(n<=0) return;
             ctx.lineJoin = "round";
             ctx.lineCap = "round";
             if(shape.type == "pencil"){
@@ -102,7 +100,6 @@ export default function Canvas() {
                 ctx.lineJoin = "round";
                 ctx.stroke()
             }
-            n=n-1;
         });
 
     }
@@ -111,7 +108,7 @@ export default function Canvas() {
 
         drawShapes(shapes)
 
-    }, [shapes, shapes_length])
+    }, [shapes])
 
     useEffect(() => {
         switch (shape) {
@@ -122,16 +119,11 @@ export default function Canvas() {
                 break;
 
             case "undo":
-                if(shapes_length-1 >=0 ){
-                    setShapesLength(shapes_length-2)
+                const updated_shapes = []
+                for(let i =0;i<shapes.length-1;i++){
+                    updated_shapes.push(shapes[i])
                 }
-                setShape("pencil")
-                break;
-
-            case "redo":
-                if(shapes_length+1 <= shapes.length){
-                    setShapesLength(shapes_length)
-                }
+                setShapes(updated_shapes)
                 setShape("pencil")
                 break;
 
@@ -342,7 +334,6 @@ export default function Canvas() {
                     cords: pencilStroke
                 }])
                 setPencilStroke([])
-                setShapesLength(shapes_length)
                 break;
 
             case "hand":
@@ -357,7 +348,6 @@ export default function Canvas() {
                     cords: {x: (x+startX)/2, y: (y+startY)/2},
                     size: { height, width }
                 }])
-                setShapesLength(shapes_length)
                 break;
 
             case "line":
@@ -368,7 +358,6 @@ export default function Canvas() {
                     cords: {x: startX, y: startY},
                     size: {height: x, width: y}
                 }])
-                setShapesLength(shapes_length)
                 break;
 
             default:
@@ -382,7 +371,6 @@ export default function Canvas() {
                 }])
                 setHeight(0)
                 setWidth(0)
-                setShapesLength(shapes_length)
                 break;
         }
 

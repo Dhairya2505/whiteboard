@@ -6,14 +6,14 @@ import { useEffect, useRef, useState, MouseEvent } from "react"
 
 interface Shape {
     id: string,
-    type: "shape" | "ellipse",
+    type: "shape" | "ellipse" | "line",
     cords: {x: number, y: number},
     size: {height: number, width: number}
 }
 
 interface Pencil {
     id: string,
-    type: "pencil" | "eraser",
+    type: "pencil",
     cords: {x: number, y: number}[]    
 }
 
@@ -34,7 +34,7 @@ export default function Canvas() {
     const [draggingOffset, setDraggingOffset] = useState({ x: 0, y: 0 });
     const [pencilCords, setPencilCords] = useState<{x: number, y: number}[]>([])
 
-    const { shapes, setShapes, shape, setShape } = shape_store();
+    const { shapes, setShapes, shape, setShape, shapes_length, setShapesLength } = shape_store();
 
     useEffect(() => {
         if (canvas.current) {
@@ -58,8 +58,9 @@ export default function Canvas() {
         if(!ctx) return;
         
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
+        let n = shapes_length;
         shapes.forEach((shape) => {
+            if(n<=0) return;
             ctx.lineJoin = "round";
             ctx.lineCap = "round";
             if(shape.type == "pencil"){
@@ -86,25 +87,22 @@ export default function Canvas() {
                 ctx.strokeRect(shape.cords.x, shape.cords.y, shape.size.width, shape.size.height)
             } else if(shape.type == "ellipse"){
                 ctx.beginPath();
-                // ctx.moveTo(shape.cords.x, shape.cords.y);
                 ctx.arc(shape.cords.x, shape.cords.y, shape.size.height, 0, Math.PI * 2);
                 ctx.fillStyle = "transparent";
                 ctx.fill();
                 ctx.strokeStyle = "white";
                 ctx.stroke();
-            } else if (shape.type == "eraser"){
-                if (shape.cords.length < 2) return;
-                ctx.strokeStyle = "black";
-                ctx.lineWidth = 40;
-    
-                ctx.beginPath();
-                ctx.moveTo(shape.cords[0].x, shape.cords[0].y);
-    
-                for (let i = 1; i < shape.cords.length; i++) {
-                    ctx.lineTo(shape.cords[i].x, shape.cords[i].y);
-                }
-                ctx.stroke();
+            } else if (shape.type == "line"){
+                ctx.beginPath()
+                ctx.moveTo(shape.cords.x, shape.cords.y)
+                ctx.lineTo(shape.size.height, shape.size.width)
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 1;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+                ctx.stroke()
             }
+            n=n-1;
         });
 
     }
@@ -113,7 +111,7 @@ export default function Canvas() {
 
         drawShapes(shapes)
 
-    }, [shapes])
+    }, [shapes, shapes_length])
 
     useEffect(() => {
         switch (shape) {
@@ -122,14 +120,21 @@ export default function Canvas() {
                 setShapes(newShapes)
                 setShape("pencil")
                 break;
+
             case "undo":
-                const updated_Shapes: (Shape | Pencil)[] = []
-                for (let i = 0; i < shapes.length-1; i++) {
-                    updated_Shapes.push(shapes[i])
+                if(shapes_length-1 >=0 ){
+                    setShapesLength(shapes_length-2)
                 }
-                setShapes(updated_Shapes)
                 setShape("pencil")
                 break;
+
+            case "redo":
+                if(shapes_length+1 <= shapes.length){
+                    setShapesLength(shapes_length)
+                }
+                setShape("pencil")
+                break;
+
             default:
                 break;
         }
@@ -184,7 +189,7 @@ export default function Canvas() {
                     }
                 }
                 break;
-        
+
             default:  
                 break;
         }
@@ -202,14 +207,6 @@ export default function Canvas() {
         
         switch (shape) {
             case "pencil":
-                ctx.lineTo(x, y)
-                ctx.stroke();
-                setPencilStroke((prev) => [...prev, {x, y}])
-                break;
-
-            case "eraser":
-                ctx.lineWidth = 40;
-                ctx.strokeStyle = "black"
                 ctx.lineTo(x, y)
                 ctx.stroke();
                 setPencilStroke((prev) => [...prev, {x, y}])
@@ -248,12 +245,25 @@ export default function Canvas() {
                 }  
                 break;  
 
+            case "line":
+                if(!(startX && startY)) return;
+                ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
+                drawShapes(shapes)
+                ctx.beginPath()
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(x,y)
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 1;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+                ctx.stroke();
+                break;
+
             case "ellipse":
                 if(!(startX && startY)) return;
                 ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
                 drawShapes(shapes)
                 ctx.beginPath()
-                // ctx.moveTo(x,y)
                 ctx.arc((x+startX)/2, (y+startY)/2, Math.max(Math.abs(x - startX), Math.abs(y - startY)) / 2, 0, Math.PI * 2);
                 ctx.fillStyle = "transparent";
                 ctx.strokeStyle = "white";
@@ -332,16 +342,7 @@ export default function Canvas() {
                     cords: pencilStroke
                 }])
                 setPencilStroke([])
-                break;
-
-            case "eraser":
-                if(!pencilStroke.length) return;
-                setShapes([...shapes, {
-                    id,
-                    type: "eraser",
-                    cords: pencilStroke
-                }])
-                setPencilStroke([])
+                setShapesLength(shapes_length)
                 break;
 
             case "hand":
@@ -356,7 +357,19 @@ export default function Canvas() {
                     cords: {x: (x+startX)/2, y: (y+startY)/2},
                     size: { height, width }
                 }])
-                break
+                setShapesLength(shapes_length)
+                break;
+
+            case "line":
+                if(!(startX && startY)) return;
+                setShapes([...shapes, {
+                    id,
+                    type: "line",
+                    cords: {x: startX, y: startY},
+                    size: {height: x, width: y}
+                }])
+                setShapesLength(shapes_length)
+                break;
 
             default:
                 if(!(startX && startY)) return;
@@ -369,6 +382,7 @@ export default function Canvas() {
                 }])
                 setHeight(0)
                 setWidth(0)
+                setShapesLength(shapes_length)
                 break;
         }
 

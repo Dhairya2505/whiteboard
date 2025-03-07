@@ -5,29 +5,25 @@ import { shape_store } from "@/zustand_store/shapes_store"
 import {
     Hand,
     Pencil,
-    Eraser,
     Square,
     Circle,
-    Type,
     Undo,
     Redo,
-    Save,
-    Trash2
+    Trash2,
+    Slash
 } from "lucide-react"
 
 const tools = [
     {icon: Hand, name: "hand"},
+    {icon: Slash, name: "line"},
     { icon: Pencil, name: "pencil" },
-    { icon: Eraser, name: "eraser" },
     { icon: Square, name: "rectangle" },
     { icon: Circle, name: "ellipse" },
-    { icon: Type, name: "text" }
 ]
 
 const actions = [
     { icon: Undo, name: "undo" },
     { icon: Redo, name: "redo" },
-    { icon: Save, name: "save" },
     { icon: Trash2, name: "clear" }
 ]
 

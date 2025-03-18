@@ -19,7 +19,7 @@ Dive in and start creating today! 💻🎨🖍️
 
 2. **Draggable Objects**: The application allows users to add, move, and reposition draggable objects freely, enabling dynamic and interactive whiteboard customization.
 
-##Screenshots
+## Screenshots
 
 ![](https://dhairyasingla-whiteboard-images.s3.ap-south-1.amazonaws.com/whiteboard.png)
 
